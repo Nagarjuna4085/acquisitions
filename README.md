@@ -614,30 +614,326 @@ import {createUser} from "#services/auth.service.js";
 | `npm run docker:migrate:prod` | Run migrations in production |
 | `npm run docker:clean` | Clean up Docker resources |
 
-## 📊 Logging
+## 📊 Logging & Debugging
 
-The application uses Winston for comprehensive logging:
+The application uses Winston for comprehensive logging with different outputs for development and production.
 
-- **Console Logs**: Development environment
-- **File Logs**: Production environment
-  - `logs/error.log` - Error level logs
-  - `logs/combined.log` - All logs
+### Logging Configuration
+- **Console Logs**: Development environment (colored output)
+- **File Logs**: Both development and production
+  - `logs/error.log` - Error level logs only
+  - `logs/combined.log` - All log levels
+- **HTTP Logs**: Morgan middleware logs all HTTP requests
 
 ### Log Levels
-- `error` - Error conditions
-- `warn` - Warning conditions  
-- `info` - Informational messages
-- `debug` - Debug-level messages
+- `error` - Error conditions and exceptions
+- `warn` - Warning conditions and potential issues
+- `info` - Informational messages (default level)
+- `debug` - Debug-level messages for troubleshooting
+
+### Viewing Logs in Development
+
+#### Local Development (`npm run dev`)
+Logs appear directly in your terminal with colored output.
+
+#### Docker Development
+When using Docker containers, logs are captured differently:
+
+**Real-time container logs:**
+```powershell
+# View live application logs
+npm run docker:dev:logs
+
+# Or directly with Docker
+docker logs acquisitions-app-dev -f
+
+# View last 100 lines
+docker logs acquisitions-app-dev --tail 100 -f
+```
+
+**Log files (mounted to host):**
+```powershell
+# View error logs
+Get-Content logs\error.log -Wait
+
+# View all logs
+Get-Content logs\combined.log -Wait
+
+# View last 50 lines
+Get-Content logs\combined.log -Tail 50
+```
+
+**Access container shell:**
+```bash
+# Using dev script (if on Linux/macOS)
+./scripts/dev-docker.sh shell
+
+# Or directly with Docker
+docker exec -it acquisitions-app-dev /bin/sh
+```
+
+### What You'll See in Logs
+
+**During sign-up requests:**
+- Input validation logs
+- User creation success/failure messages
+- JWT token generation logs
+- Database operation results
+
+**During sign-in requests:**
+- Authentication attempt logs
+- Password verification results
+- Session management logs
+
+**Security events:**
+- Rate limiting violations (when Arcjet middleware is enabled)
+- Bot detection alerts
+- Suspicious request patterns
+
+### Debugging Tips
+
+**Multiple terminal setup for Docker development:**
+1. **Terminal 1**: `npm run docker:dev:build` (start containers)
+2. **Terminal 2**: `npm run docker:dev:logs` (watch logs)
+3. **Terminal 3**: Make API requests and test endpoints
+
+**Check container health:**
+```powershell
+docker ps
+docker-compose -f docker-compose.dev.yml ps
+```
 
 ## 🛡️ Security Features
 
-- **Helmet**: Security headers middleware
+### Built-in Security
+- **Helmet**: Security headers middleware for common vulnerabilities
 - **CORS**: Cross-origin resource sharing protection
-- **bcrypt**: Password hashing with salt
-- **JWT**: Stateless authentication tokens
-- **Secure Cookies**: HTTP-only, secure, SameSite cookies
-- **Input Validation**: Zod schema validation
-- **SQL Injection Protection**: Drizzle ORM query builder
+- **bcrypt**: Password hashing with 12 salt rounds
+- **JWT**: Stateless authentication tokens with expiration
+- **Secure Cookies**: HTTP-only, secure, SameSite cookies (15min expiry)
+- **Input Validation**: Zod schema validation with type safety
+- **SQL Injection Protection**: Drizzle ORM parameterized queries
+
+### Arcjet Security Integration
+The project includes Arcjet for enterprise-grade security:
+
+- **Shield Protection**: Blocks common attacks (SQL injection, XSS)
+- **Bot Detection**: Identifies and blocks automated requests
+- **Rate Limiting**: Configurable request limits per user role:
+  - Guest: 500 requests/minute
+  - User: 1000 requests/minute  
+  - Admin: 2000 requests/minute
+
+**Note**: Security middleware is currently disabled in `app.js`. To enable:
+```javascript
+// Uncomment this line in src/app.js
+app.use(SecurityMiddleware);
+```
+
+### Environment Variables for Security
+```env
+# Required
+JWT_SECRET=your-super-secure-jwt-secret-change-in-production
+DATABASE_URL=postgresql://...
+
+# Optional Arcjet (for advanced security)
+ARCJET_KEY=your-arcjet-api-key
+```
+
+## 🗃️ Database Schema
+
+The application uses PostgreSQL with Drizzle ORM. Current schema:
+
+### Users Table
+```sql
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,  -- bcrypt hashed
+  role VARCHAR(50) NOT NULL DEFAULT 'user',
+  created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+  updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+);
+```
+
+### Supported Roles
+- `user` (default): Standard user access
+- `admin`: Administrative access (future functionality)
+
+## 🌐 Platform-Specific Instructions
+
+### Windows Users (PowerShell)
+
+**Recommended approach** - Use npm scripts instead of bash scripts:
+```powershell
+# Start development
+npm run docker:dev:build
+
+# View logs
+npm run docker:dev:logs
+
+# Stop environment
+npm run docker:dev:down
+
+# Run migrations
+npm run docker:migrate:dev
+```
+
+**Alternative** - Using bash scripts (requires Git Bash or WSL):
+```powershell
+# Make scripts executable (one time setup)
+bash ./scripts/setup.sh
+
+# Run development commands
+bash ./scripts/dev-docker.sh start
+bash ./scripts/dev-docker.sh logs
+```
+
+### Linux/macOS Users
+
+```bash
+# Make scripts executable (one time setup)
+chmod +x scripts/*.sh
+
+# Use bash scripts directly
+./scripts/dev-docker.sh start
+./scripts/dev-docker.sh logs
+./scripts/dev-docker.sh migrate
+```
+
+## 🧪 Testing the API
+
+### Using cURL (PowerShell)
+
+**Health check:**
+```powershell
+curl http://localhost:3000/health
+```
+
+**User registration:**
+```powershell
+curl -X POST http://localhost:3000/api/auth/sign-up `
+  -H "Content-Type: application/json" `
+  -d '{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "password123",
+    "role": "user"
+  }'
+```
+
+**User login:**
+```powershell
+curl -X POST http://localhost:3000/api/auth/sign-in `
+  -H "Content-Type: application/json" `
+  -d '{
+    "email": "john@example.com",
+    "password": "password123"
+  }'
+```
+
+**User logout:**
+```powershell
+curl -X POST http://localhost:3000/api/auth/sign-out
+```
+
+### Expected Responses
+
+**Successful registration/login:**
+```json
+{
+  "success": true,
+  "message": "User registered successfully",
+  "user": {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john@example.com",
+    "role": "user"
+  }
+}
+```
+
+**Validation error:**
+```json
+{
+  "error": "Validation failed",
+  "details": "Email is required, Password must be at least 6 characters"
+}
+```
+
+## 📁 Project Structure Explained
+
+### Core Application (`src/`)
+```
+src/
+├── config/              # Infrastructure configuration
+│   ├── database.js      # Neon DB + Drizzle ORM setup
+│   ├── logger.js        # Winston logging configuration
+│   └── arcjet.js        # Security service configuration
+├── controllers/         # HTTP request handlers
+│   └── auth.controller.js
+├── services/           # Business logic layer
+│   └── auth.service.js # User creation, authentication
+├── models/             # Database schemas
+│   └── user.model.js   # Drizzle user table definition
+├── routes/             # API endpoint definitions
+│   └── auth.routes.js  # Authentication routes
+├── utils/              # Helper functions
+│   ├── jwt.js          # JWT token utilities
+│   ├── cookies.js      # Cookie management
+│   └── format.js       # Error formatting
+├── validations/        # Input validation schemas
+│   └── auth.validation.js # Zod validation schemas
+├── middleware/         # Request middleware
+│   └── security.middleware.js # Arcjet integration
+├── app.js              # Express application setup
+├── server.js           # HTTP server startup
+└── index.js            # Application entry point
+```
+
+### Support Files
+```
+drizzle/                # Database migrations
+├── meta/               # Migration metadata
+scripts/                # Deployment automation
+├── dev-docker.sh       # Development Docker management
+├── prod-docker.sh      # Production Docker management
+└── setup.sh            # Script setup utility
+logs/                   # Application logs (created at runtime)
+├── error.log           # Error-level logs
+└── combined.log        # All logs
+```
+
+## 🚀 Future Enhancements
+
+Based on the current architecture, potential future additions:
+
+### Authentication Extensions
+- Password reset functionality
+- Email verification
+- Refresh token rotation
+- Social login integration
+- Multi-factor authentication
+
+### API Extensions
+- User profile management endpoints
+- Role-based access control (RBAC)
+- API versioning strategy
+- Pagination for list endpoints
+
+### Infrastructure
+- Redis for session management
+- API documentation with Swagger
+- Automated testing suite
+- CI/CD pipeline configuration
+- Monitoring and observability
+
+### Acquisition-Specific Features
+- Company/deal management
+- Document management
+- Workflow automation
+- Notification system
 
 ## 🤝 Contributing
 
