@@ -174,3 +174,9 @@
 {"level":"info","message":"User john@teste.com created successfully","service":"acquisitions-api"}
 {"level":"info","message":"USER REGISTERED SUCCESSFULLY : john@teste.com","service":"acquisitions-api"}
 {"level":"info","message":"::ffff:172.18.0.1 - - [01/Oct/2025:18:07:11 +0000] \"POST /api/auth/sign-up HTTP/1.1\" 201 126 \"-\" \"HTTPie\"","service":"acquisitions-api"}
+{"email":"abcd@sdaawqdr.com","level":"info","message":".....bodyyyy","name":"abcd","password":"123456","service":"acquisitions-api"}
+{"level":"info","message":"User abcd@sdaawqdr.com created successfully","service":"acquisitions-api"}
+{"level":"info","message":"USER REGISTERED SUCCESSFULLY : abcd@sdaawqdr.com","service":"acquisitions-api"}
+{"level":"info","message":"::ffff:172.18.0.1 - - [01/Oct/2025:18:22:34 +0000] \"POST /api/auth/sign-up HTTP/1.1\" 201 129 \"-\" \"HTTPie\"","service":"acquisitions-api"}
+{"level":"info","message":"Getting all users","service":"acquisitions-api"}
+{"level":"info","message":"::ffff:172.18.0.1 - - [01/Oct/2025:19:00:43 +0000] \"GET /api/users/ HTTP/1.1\" 200 475 \"-\" \"HTTPie\"","service":"acquisitions-api"}
