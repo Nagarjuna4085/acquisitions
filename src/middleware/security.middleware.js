@@ -8,15 +8,15 @@ const securityMiddleware = async (req,res,next)=>{
         let message;
         switch(role){
                 case 'guest':
-                    limit = 5;
+                    limit = 500;
                     message = 'Guest request limit exceeded (5 per minute). slow down';
                     break;
                 case 'user':
-                    limit = 10;
+                    limit = 1000;
                     message = 'User request limit exceeded (10 per minute). slow down';
                     break;
                 case 'admin':
-                    limit = 20;
+                    limit = 2000;
                     message = 'Admin request limit exceeded (20 per minute). slow down ';
                     break;
         }

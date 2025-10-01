@@ -19,7 +19,7 @@ app.use(cookieParser());app.use(
     })
 );
 
-app.use(SecurityMiddleware);
+// app.use(SecurityMiddleware);
 
 app.get('/',(req,res)=>{
     logger.info("Hello from Acquisitions!");

@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # Main application service for production
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: acquisitions-app-prod
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.production
+    volumes:
+      # Mount logs directory for persistent logging
+      - logs:/app/logs
+    networks:
+      - acquisitions-network
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:3000/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1) })\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+  # Database migration service for production
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: acquisitions-migrate-prod
+    env_file:
+      - .env.production
+    networks:
+      - acquisitions-network
+    command: ["npm", "run", "db:migrate"]
+    profiles:
+      - migration
+    restart: "no"
+
+  # Optional: Monitoring service (can be added based on needs)
+  # monitoring:
+  #   image: prom/prometheus:latest
+  #   container_name: acquisitions-monitoring
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+  #   networks:
+  #     - acquisitions-network
+  #   profiles:
+  #     - monitoring
+
+networks:
+  acquisitions-network:
+    driver: bridge
+
+volumes:
+  logs:
+    driver: local

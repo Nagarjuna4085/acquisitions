@@ -12,6 +12,7 @@ A modern, secure REST API built with Node.js and Express.js that provides user a
 - [Environment Variables](#environment-variables)
 - [Database Setup](#database-setup)
 - [Running the Application](#running-the-application)
+- [Docker Setup](#docker-setup)
 - [API Endpoints](#api-endpoints)
 - [Authentication Flow](#authentication-flow)
 - [Development](#development)
@@ -198,6 +199,244 @@ npm start
 
 The server will start on `http://localhost:3000` (or your configured PORT).
 
+## 🐳 Docker Setup
+
+The application is fully dockerized with separate configurations for development and production environments.
+
+### 🛠️ Development Environment (with Neon Local)
+
+For development, we use **Neon Local** which creates ephemeral database branches automatically. This provides isolated database environments that are created when containers start and destroyed when they stop.
+
+#### Prerequisites for Docker Development
+
+1. **Docker & Docker Compose** installed on your machine
+2. **Neon account** with API access
+3. **Neon project** set up in the cloud
+
+#### Step 1: Configure Neon Local Environment
+
+1. **Get your Neon credentials:**
+   ```bash
+   # From your Neon Console (https://console.neon.tech)
+   # You'll need:
+   # - NEON_API_KEY (from Account Settings -> API Keys)
+   # - NEON_PROJECT_ID (from your project URL or dashboard)
+   # - PARENT_BRANCH_ID (usually 'main' or your primary branch ID)
+   ```
+
+2. **Update `.env.development`:**
+   ```env
+   # Neon Local Configuration
+   NEON_API_KEY=your-actual-neon-api-key
+   NEON_PROJECT_ID=your-actual-project-id  
+   PARENT_BRANCH_ID=main
+   
+   # JWT Secret (for development)
+   JWT_SECRET=dev-super-secret-jwt-key-for-development-only
+   ```
+
+#### Step 2: Start Development Environment
+
+```bash
+# Start the development environment with Neon Local
+npm run docker:dev:build
+
+# Or without rebuilding (if images already exist)
+npm run docker:dev
+
+# View logs
+npm run docker:dev:logs
+
+# Stop the development environment
+npm run docker:dev:down
+```
+
+#### Step 3: Run Database Migrations (Development)
+
+```bash
+# Run migrations against Neon Local
+npm run docker:migrate:dev
+```
+
+#### Development Workflow
+
+- **Hot Reloading**: Source code is mounted as a volume, so changes are reflected immediately
+- **Ephemeral Database**: Each time you start the containers, you get a fresh database branch
+- **Automatic Cleanup**: When containers stop, the ephemeral branch is automatically deleted
+- **Network**: Services communicate via `acquisitions-network`
+- **Database URL**: `postgres://neon:npg@neon-local:5432/neondb?sslmode=require`
+
+### 🏢 Production Environment (with Neon Cloud)
+
+For production, the application connects directly to your Neon Cloud database without the local proxy.
+
+#### Step 1: Configure Production Environment
+
+```bash
+# Set environment variables (via your deployment platform)
+export DATABASE_URL="postgresql://neondb_owner:your_password@ep-example-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require"
+export JWT_SECRET="your-super-secure-production-jwt-secret"
+export CORS_ORIGIN="https://yourdomain.com"
+export LOG_LEVEL="info"
+```
+
+#### Step 2: Start Production Environment
+
+```bash
+# Build and start production containers
+DATABASE_URL="your-neon-cloud-url" JWT_SECRET="your-jwt-secret" npm run docker:prod:build
+
+# View production logs
+npm run docker:prod:logs
+
+# Stop production environment
+npm run docker:prod:down
+```
+
+#### Step 3: Run Database Migrations (Production)
+
+```bash
+# Run migrations against Neon Cloud
+DATABASE_URL="your-neon-cloud-url" npm run docker:migrate:prod
+```
+
+### 🛠️ Docker Commands Reference
+
+| Command | Description |
+|---------|-------------|
+| `npm run docker:build` | Build application Docker image |
+| `npm run docker:build:dev` | Build development image |
+| `npm run docker:build:prod` | Build production image |
+| `npm run docker:dev` | Start development environment |
+| `npm run docker:dev:build` | Build and start development environment |
+| `npm run docker:dev:down` | Stop development environment |
+| `npm run docker:dev:logs` | View development logs |
+| `npm run docker:prod` | Start production environment |
+| `npm run docker:prod:build` | Build and start production environment |
+| `npm run docker:prod:down` | Stop production environment |
+| `npm run docker:prod:logs` | View production logs |
+| `npm run docker:migrate:dev` | Run migrations in development |
+| `npm run docker:migrate:prod` | Run migrations in production |
+| `npm run docker:clean` | Clean up Docker resources |
+
+### 🏧 Docker Architecture
+
+#### Development Architecture
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Development Environment                       │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌─────────────────┐    ┌─────────────────┐                     │
+│  │   Express App   │    │   Neon Local    │                     │
+│  │   (Container)   │◄───┤   (Container)   │                     │
+│  │   Port: 3000    │    │   Port: 5432    │                     │
+│  └─────────────────┘    └─────────────────┘                     │
+│           │                       │                             │
+│           │                       ▼                             │
+│           │              ┌─────────────────┐                    │
+│           │              │  Neon Cloud     │                    │
+│           │              │  (Ephemeral     │                    │
+│           │              │   Branch)       │                    │
+│           │              └─────────────────┘                    │
+│           │                                                     │
+│           ▼                                                     │
+│    ┌─────────────────┐                                          │
+│    │   Hot Reload    │                                          │
+│    │   (Volume)      │                                          │
+│    └─────────────────┘                                          │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Production Architecture
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     Production Environment                      │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌─────────────────┐                                             │
+│  │   Express App   │                                             │
+│  │   (Container)   │                                             │
+│  │   Port: 3000    │                                             │
+│  └─────────────────┘                                             │
+│           │                                                     │
+│           │                                                     │
+│           ▼                                                     │
+│  ┌─────────────────┐                                             │
+│  │   Neon Cloud    │                                             │
+│  │   Database      │                                             │
+│  │   (Production)  │                                             │
+│  └─────────────────┘                                             │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 🔐 Security Considerations
+
+- **Non-root User**: Containers run as `nodejs` user (UID 1001)
+- **Multi-stage Build**: Production images exclude development dependencies
+- **Health Checks**: Built-in health monitoring
+- **Resource Limits**: Production containers have CPU and memory limits
+- **Secret Management**: Environment variables for sensitive data
+- **SSL/TLS**: Enforced SSL connections to databases
+
+### 🌐 Environment Variable Management
+
+#### Development (.env.development)
+```env
+NODE_ENV=development
+DATABASE_URL=postgres://neon:npg@neon-local:5432/neondb?sslmode=require
+NEON_API_KEY=your-neon-api-key
+NEON_PROJECT_ID=your-neon-project-id
+PARENT_BRANCH_ID=main
+JWT_SECRET=dev-jwt-secret
+```
+
+#### Production (Environment Variables)
+```bash
+export DATABASE_URL="postgresql://neondb_owner:password@host.neon.tech/neondb?sslmode=require"
+export JWT_SECRET="production-jwt-secret"
+export CORS_ORIGIN="https://yourdomain.com"
+export LOG_LEVEL="info"
+```
+
+### 📝 Troubleshooting Docker Setup
+
+#### Common Issues
+
+1. **Neon Local Connection Issues:**
+   ```bash
+   # Check if Neon Local container is healthy
+   docker ps
+   docker logs acquisitions-neon-local
+   
+   # Verify your Neon credentials
+   echo $NEON_API_KEY
+   echo $NEON_PROJECT_ID
+   ```
+
+2. **Port Conflicts:**
+   ```bash
+   # Check what's using port 3000 or 5432
+   netstat -tlnp | grep :3000
+   netstat -tlnp | grep :5432
+   ```
+
+3. **Database Migration Issues:**
+   ```bash
+   # Check database connection
+   npm run docker:migrate:dev
+   
+   # View migration logs
+   docker logs acquisitions-migrate-dev
+   ```
+
+4. **Memory/Resource Issues:**
+   ```bash
+   # Check Docker resource usage
+   docker stats
+   
+   # Clean up unused resources
+   npm run docker:clean
+   ```
+
 ## 🔌 API Endpoints
 
 ### Base URL
@@ -344,6 +583,7 @@ import {createUser} from "#services/auth.service.js";
 
 ## 📜 Scripts
 
+### Local Development Scripts
 | Script | Description |
 |--------|-------------|
 | `npm run dev` | Start development server with auto-reload |
@@ -355,6 +595,24 @@ import {createUser} from "#services/auth.service.js";
 | `npm run db:generate` | Generate database migrations |
 | `npm run db:migrate` | Apply database migrations |
 | `npm run db:studio` | Open Drizzle Studio |
+
+### Docker Scripts
+| Script | Description |
+|--------|-------------|
+| `npm run docker:build` | Build application Docker image |
+| `npm run docker:build:dev` | Build development image |
+| `npm run docker:build:prod` | Build production image |
+| `npm run docker:dev` | Start development environment |
+| `npm run docker:dev:build` | Build and start development environment |
+| `npm run docker:dev:down` | Stop development environment |
+| `npm run docker:dev:logs` | View development logs |
+| `npm run docker:prod` | Start production environment |
+| `npm run docker:prod:build` | Build and start production environment |
+| `npm run docker:prod:down` | Stop production environment |
+| `npm run docker:prod:logs` | View production logs |
+| `npm run docker:migrate:dev` | Run migrations in development |
+| `npm run docker:migrate:prod` | Run migrations in production |
+| `npm run docker:clean` | Clean up Docker resources |
 
 ## 📊 Logging
 
