@@ -180,3 +180,42 @@
 {"level":"info","message":"::ffff:172.18.0.1 - - [01/Oct/2025:18:22:34 +0000] \"POST /api/auth/sign-up HTTP/1.1\" 201 129 \"-\" \"HTTPie\"","service":"acquisitions-api"}
 {"level":"info","message":"Getting all users","service":"acquisitions-api"}
 {"level":"info","message":"::ffff:172.18.0.1 - - [01/Oct/2025:19:00:43 +0000] \"GET /api/users/ HTTP/1.1\" 200 475 \"-\" \"HTTPie\"","service":"acquisitions-api"}
+{"level":"info","message":"::ffff:172.18.0.1 - - [01/Oct/2025:19:16:08 +0000] \"GET /api/users/1 HTTP/1.1\" 401 70 \"-\" \"HTTPie\"","service":"acquisitions-api"}
+{"level":"info","message":"::ffff:172.18.0.1 - - [01/Oct/2025:19:16:36 +0000] \"GET /api/auth/sign-in HTTP/1.1\" 404 155 \"-\" \"HTTPie\"","service":"acquisitions-api"}
+{"email":"abcd@sdaawqdr.com","level":"info","message":"Sign-in attempt","service":"acquisitions-api"}
+{"level":"info","message":"User abcd@sdaawqdr.com authenticated successfully","service":"acquisitions-api"}
+{"level":"info","message":"USER SIGNED IN SUCCESSFULLY: abcd@sdaawqdr.com","service":"acquisitions-api"}
+{"level":"info","message":"::ffff:172.18.0.1 - - [01/Oct/2025:19:16:44 +0000] \"POST /api/auth/sign-in HTTP/1.1\" 200 128 \"-\" \"HTTPie\"","service":"acquisitions-api"}
+{"level":"info","message":"Getting user with ID: 3","service":"acquisitions-api"}
+{"level":"info","message":"User with ID 3 retrieved successfully","service":"acquisitions-api"}
+{"level":"info","message":"::ffff:172.18.0.1 - - [01/Oct/2025:19:17:42 +0000] \"GET /api/users/3 HTTP/1.1\" 200 208 \"-\" \"HTTPie\"","service":"acquisitions-api"}
+{"level":"info","message":"Getting user with ID: 2","service":"acquisitions-api"}
+{"level":"info","message":"User with ID 2 retrieved successfully","service":"acquisitions-api"}
+{"level":"info","message":"::ffff:172.18.0.1 - - [01/Oct/2025:19:17:44 +0000] \"GET /api/users/2 HTTP/1.1\" 200 205 \"-\" \"HTTPie\"","service":"acquisitions-api"}
+{"level":"info","message":"Getting user with ID: 3","service":"acquisitions-api"}
+{"level":"info","message":"User with ID 3 retrieved successfully","service":"acquisitions-api"}
+{"level":"info","message":"::ffff:172.18.0.1 - - [01/Oct/2025:19:17:46 +0000] \"GET /api/users/3 HTTP/1.1\" 200 208 \"-\" \"HTTPie\"","service":"acquisitions-api"}
+{"level":"info","message":"Getting user with ID: 4","service":"acquisitions-api"}
+{"level":"error","message":"Error getting user by ID: User not found","service":"acquisitions-api","stack":"Error: User not found\n    at getUserById (file:///app/src/services/users.services.js:39:19)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async getUserById (file:///app/src/controllers/users.controller.js:38:22)"}
+{"level":"error","message":"Error in getUserById controller: User not found","service":"acquisitions-api","stack":"Error: User not found\n    at getUserById (file:///app/src/services/users.services.js:39:19)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async getUserById (file:///app/src/controllers/users.controller.js:38:22)"}
+{"level":"info","message":"::ffff:172.18.0.1 - - [01/Oct/2025:19:17:48 +0000] \"GET /api/users/4 HTTP/1.1\" 404 80 \"-\" \"HTTPie\"","service":"acquisitions-api"}
+{"level":"info","message":"Getting user with ID: 1","service":"acquisitions-api"}
+{"level":"info","message":"User with ID 1 retrieved successfully","service":"acquisitions-api"}
+{"level":"info","message":"::ffff:172.18.0.1 - - [01/Oct/2025:19:17:54 +0000] \"GET /api/users/1 HTTP/1.1\" 200 208 \"-\" \"HTTPie\"","service":"acquisitions-api"}
+{"level":"info","message":"::ffff:172.18.0.1 - - [01/Oct/2025:19:18:19 +0000] \"DELETE /api/users/2 HTTP/1.1\" 403 74 \"-\" \"HTTPie\"","service":"acquisitions-api"}
+{"level":"info","message":"Deleting user with ID: 3","service":"acquisitions-api"}
+{"level":"info","message":"User with ID 3 (abcd@sdaawqdr.com) deleted successfully","service":"acquisitions-api"}
+{"level":"info","message":"::ffff:172.18.0.1 - - [01/Oct/2025:19:18:30 +0000] \"DELETE /api/users/3 HTTP/1.1\" 200 126 \"-\" \"HTTPie\"","service":"acquisitions-api"}
+{"level":"info","message":"Getting user with ID: 3","service":"acquisitions-api"}
+{"level":"error","message":"Error getting user by ID: User not found","service":"acquisitions-api","stack":"Error: User not found\n    at getUserById (file:///app/src/services/users.services.js:39:19)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async getUserById (file:///app/src/controllers/users.controller.js:38:22)"}
+{"level":"error","message":"Error in getUserById controller: User not found","service":"acquisitions-api","stack":"Error: User not found\n    at getUserById (file:///app/src/services/users.services.js:39:19)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async getUserById (file:///app/src/controllers/users.controller.js:38:22)"}
+{"level":"info","message":"::ffff:172.18.0.1 - - [01/Oct/2025:19:18:38 +0000] \"GET /api/users/3 HTTP/1.1\" 404 80 \"-\" \"HTTPie\"","service":"acquisitions-api"}
+{"level":"info","message":"Getting user with ID: 1","service":"acquisitions-api"}
+{"level":"info","message":"User with ID 1 retrieved successfully","service":"acquisitions-api"}
+{"level":"info","message":"::ffff:172.18.0.1 - - [01/Oct/2025:19:18:43 +0000] \"GET /api/users/1 HTTP/1.1\" 200 208 \"-\" \"HTTPie\"","service":"acquisitions-api"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [02/Oct/2025:13:57:57 +0000] \"GET /health HTTP/1.1\" 200 73 \"-\" \"-\"","service":"acquisitions-api"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [02/Oct/2025:13:57:57 +0000] \"GET /api HTTP/1.1\" 200 44 \"-\" \"-\"","service":"acquisitions-api"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [02/Oct/2025:13:57:57 +0000] \"GET /nonexsistent HTTP/1.1\" 404 27 \"-\" \"-\"","service":"acquisitions-api"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [02/Oct/2025:14:02:31 +0000] \"GET /health HTTP/1.1\" 200 73 \"-\" \"-\"","service":"acquisitions-api"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [02/Oct/2025:14:02:31 +0000] \"GET /api HTTP/1.1\" 200 44 \"-\" \"-\"","service":"acquisitions-api"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [02/Oct/2025:14:02:31 +0000] \"GET /nonexsistent HTTP/1.1\" 404 27 \"-\" \"-\"","service":"acquisitions-api"}
